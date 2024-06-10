@@ -10,6 +10,5 @@ import com.entelgy.project.demo.Entity.User;
 @RepositoryRestResource(path = "users")
 public interface UserRepository extends JpaRepository<User, Long> {
     Optional<User> findByUsername(String username);
-
     User findByEmail(String email);
 }

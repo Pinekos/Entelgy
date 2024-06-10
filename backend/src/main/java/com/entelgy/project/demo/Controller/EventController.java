@@ -11,8 +11,8 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.w3c.dom.events.Event;
 
-import com.entelgy.project.demo.Entity.Event;
 import com.entelgy.project.demo.Entity.User;
 import com.entelgy.project.demo.Service.EventService;
 import com.entelgy.project.demo.Service.UserService;
@@ -33,14 +33,25 @@ public class EventController {
         return eventService.saveEvent(event);
     }
 
+    @PostMapping("/user/{userId}")
+    public Event createEventForUser(@PathVariable Long userId, @RequestBody Event event) {
+        Optional<User> user = userService.getUserById(userId);
+        return user.map(value -> eventService.saveEventForUser(event, value)).orElse(null);
+    }
+
+    @PutMapping("/{eventId}/user/{userId}")
+    public Event assignEventToUser(@PathVariable Long eventId, @PathVariable Long userId) {
+        return eventService.assignEventToUser(eventId, userId);
+    }
+    
     @PutMapping("/{id}")
     public Event updateEvent(@PathVariable Long id, @RequestBody Event event) {
         return eventService.updateEvent(id, event);
     }
 
     @DeleteMapping("/{id}")
-    public void deleteEvent(@PathVariable Long id) {
-        eventService.deleteEvent(id);
+    public boolean deleteEvent(@PathVariable Long id) {
+        return eventService.deleteEvent(id);
     }
     
     @GetMapping
