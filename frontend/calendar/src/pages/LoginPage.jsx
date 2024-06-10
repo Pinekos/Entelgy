@@ -1,7 +1,6 @@
-import React, { useEffect, useState } from 'react';
-import { findAllUsers } from '../services/UserService';
-import './LoginPage.css';
+import React, { useState } from 'react';
 import axios from 'axios';
+import './LoginPage.css';
 
 const USERS_URL = 'http://localhost:8081/api/users';
 const EVENTS_URL = 'http://localhost:8081/api/events';
@@ -19,21 +18,7 @@ export const LoginPage = () => {
         password: ''
     });
 
-    const [users, setUsers] = useState([]);
-
-    const getUsers = async () => {
-        const result = await findAllUsers();
-        if (result && result.data && result.data._embedded && result.data._embedded.users) {
-            setUsers(result.data._embedded.users);
-            console.log(result.data._embedded.users);
-        } else {
-            console.log('No users found');
-        }
-    };
-
-    useEffect(() => {
-        getUsers();
-    }, []);
+    const [error, setError] = useState('');
 
     const handleRegisterChange = (e) => {
         const { name, value } = e.target;
@@ -48,6 +33,11 @@ export const LoginPage = () => {
     const handleRegisterSubmit = async (e) => {
         e.preventDefault();
 
+        if (registerData.password !== registerData.confirmPassword) {
+            alert('Passwords do not match');
+            return;
+        }
+
         const response = await fetch(`${USERS_URL}/register`, {
             method: 'POST',
             headers: {
@@ -60,52 +50,22 @@ export const LoginPage = () => {
         console.log(result);
     };
 
-    // He probado de varias formas, pero no consigo que funcione el login
-    /*
-        const handleLoginSubmit = async (e) => {
-            e.preventDefault();
-    
-            const response = await axios.post(`${USERS_URL}/login`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(loginData)
-            });
-    
-            if (response.ok) {
-                const user = await response.json();
-                console.log(user);
-                localStorage.setItem('user', JSON.stringify(user));
-                window.location.href = `${EVENTS_URL}/${user.id}/events`;
-            } else {
-                alert('Login failed. Please check your credentials.');
-            }
-        };
-    
-        /*const handleLoginSubmit = async (e) => {
-            e.preventDefault();
-            try {
-                const response = await UserService.login({ username, password });
-                console.log('Login successful:', response.data);
-            } catch (error) {
-                console.error('Login failed:', error);
-            }
-        };*/
-
     const handleLoginSubmit = async (event) => {
         event.preventDefault();
+        setError('');
+
         try {
-            const response = await axios.post('http://localhost:8081/api/users/login', {
-                username,
-                password,
-            }, {
+            const response = await axios.post(`${USERS_URL}/login`, loginData, {
                 headers: {
                     'Content-Type': 'application/json',
                 }
             });
+
             console.log('Login successful:', response.data);
-        
+            const user = response.data;
+            localStorage.setItem('user', JSON.stringify(user));
+            window.location.href = `${EVENTS_URL}/${user.id}`;
+
         } catch (error) {
             if (error.response) {
                 console.log('Error data:', error.response.data);
@@ -119,95 +79,97 @@ export const LoginPage = () => {
                 setError('Error al enviar la solicitud');
             }
         }
-    }
-        return (
-            <div className="login-container">
-                <div className="row">
-                    <div className="col-md-6 login-form-1">
-                        <h3>Registro</h3>
-                        <form onSubmit={handleRegisterSubmit}>
-                            <div className="form-group mb-2">
-                                <input
-                                    type="text"
-                                    className="form-control"
-                                    placeholder="Nombre"
-                                    name="username"
-                                    value={registerData.username}
-                                    onChange={handleRegisterChange}
-                                />
-                            </div>
-                            <div className="form-group mb-2">
-                                <input
-                                    type="email"
-                                    className="form-control"
-                                    placeholder="Correo"
-                                    name="email"
-                                    value={registerData.email}
-                                    onChange={handleRegisterChange}
-                                />
-                            </div>
-                            <div className="form-group mb-2">
-                                <input
-                                    type="password"
-                                    className="form-control"
-                                    placeholder="Contraseña"
-                                    name="password"
-                                    value={registerData.password}
-                                    onChange={handleRegisterChange}
-                                />
-                            </div>
-                            <div className="form-group mb-2">
-                                <input
-                                    type="password"
-                                    className="form-control"
-                                    placeholder="Confirmar Contraseña"
-                                    name="confirmPassword"
-                                    value={registerData.confirmPassword}
-                                    onChange={handleRegisterChange}
-                                />
-                            </div>
-                            <div className="d-grid gap-2">
-                                <input
-                                    type="submit"
-                                    className="btnSubmit"
-                                    value="Crear cuenta"
-                                />
-                            </div>
-                        </form>
-                    </div>
-                    <div className="col-md-6 login-form-2">
-                        <h3>Ingreso</h3>
-                        <form onSubmit={handleLoginSubmit}>
-                            <div className="form-group mb-2">
-                                <input
-                                    type="text"
-                                    className="form-control"
-                                    placeholder="Correo"
-                                    name="email"
-                                    value={loginData.email}
-                                    onChange={handleLoginChange}
-                                />
-                            </div>
-                            <div className="form-group mb-2">
-                                <input
-                                    type="password"
-                                    className="form-control"
-                                    placeholder="Contraseña"
-                                    name="password"
-                                    value={loginData.password}
-                                    onChange={handleLoginChange}
-                                />
-                            </div>
-                            <div className="d-grid gap-2">
-                                <input
-                                    type="submit"
-                                    className="btnSubmit"
-                                    value="Iniciar sesión"
-                                />
-                            </div>
-                        </form>
-                    </div>
+    };
+
+    return (
+        <div className="login-container">
+            <div className="row">
+                <div className="col-md-6 login-form-1">
+                    <h3>Registro</h3>
+                    <form onSubmit={handleRegisterSubmit}>
+                        <div className="form-group mb-2">
+                            <input
+                                type="text"
+                                className="form-control"
+                                placeholder="Nombre"
+                                name="username"
+                                value={registerData.username}
+                                onChange={handleRegisterChange}
+                            />
+                        </div>
+                        <div className="form-group mb-2">
+                            <input
+                                type="email"
+                                className="form-control"
+                                placeholder="Correo"
+                                name="email"
+                                value={registerData.email}
+                                onChange={handleRegisterChange}
+                            />
+                        </div>
+                        <div className="form-group mb-2">
+                            <input
+                                type="password"
+                                className="form-control"
+                                placeholder="Contraseña"
+                                name="password"
+                                value={registerData.password}
+                                onChange={handleRegisterChange}
+                            />
+                        </div>
+                        <div className="form-group mb-2">
+                            <input
+                                type="password"
+                                className="form-control"
+                                placeholder="Confirmar Contraseña"
+                                name="confirmPassword"
+                                value={registerData.confirmPassword}
+                                onChange={handleRegisterChange}
+                            />
+                        </div>
+                        <div className="d-grid gap-2">
+                            <input
+                                type="submit"
+                                className="btnSubmit"
+                                value="Crear cuenta"
+                            />
+                        </div>
+                    </form>
+                </div>
+                <div className="col-md-6 login-form-2">
+                    <h3>Ingreso</h3>
+                    <form onSubmit={handleLoginSubmit}>
+                        <div className="form-group mb-2">
+                            <input
+                                type="email"
+                                className="form-control"
+                                placeholder="Correo"
+                                name="email"
+                                value={loginData.email}
+                                onChange={handleLoginChange}
+                            />
+                        </div>
+                        <div className="form-group mb-2">
+                            <input
+                                type="password"
+                                className="form-control"
+                                placeholder="Contraseña"
+                                name="password"
+                                value={loginData.password}
+                                onChange={handleLoginChange}
+                            />
+                        </div>
+                        <div className="d-grid gap-2">
+                            <input
+                                type="submit"
+                                className="btnSubmit"
+                                value="Iniciar sesión"
+                            />
+                        </div>
+                    </form>
+                    {error && <div className="alert alert-danger mt-2">{error}</div>}
                 </div>
             </div>
-        );
-    };
+        </div>
+    );
+};
