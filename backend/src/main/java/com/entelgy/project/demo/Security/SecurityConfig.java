@@ -29,7 +29,10 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests((authz) -> authz
                         .requestMatchers("/", "/css/**", "/js/**", "/images/**").permitAll()
-                        .requestMatchers("/api/users/**").permitAll()
+                        .requestMatchers("/api/**").permitAll()
+                        .requestMatchers("/api/users/register").permitAll()
+                        .requestMatchers("/api/events").permitAll()
+                        .requestMatchers("/api/comentarios").permitAll()
                         .requestMatchers("/login").permitAll()
                         .anyRequest().authenticated())
                 .formLogin((login) -> login.loginPage("/login").permitAll())
