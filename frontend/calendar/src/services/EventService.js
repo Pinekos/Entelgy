@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const EVENTS_URL = 'http://localhost:8081/events';
+const EVENTS_URL = 'http://localhost:8081/api/events';
 
 export const findAllEvents = async () => {
     try {

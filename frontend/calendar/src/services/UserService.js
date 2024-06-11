@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const USERS_URL = 'http://localhost:8081/users';
+const USERS_URL = 'http://localhost:8081/api/users';
 
 export const findAllUsers = async () => {
     try {
@@ -29,9 +29,9 @@ export const createUser = async ({ username, password, email }) => {
 export const updateUser = async ({ username, password, email }) => {
     try {
         const response = await axios.put(`${USERS_URL}/${id}`, {
-            name,
-            description,
-            price
+            username,
+            password,
+            email
         });
         return response;
     } catch (error) {
@@ -48,4 +48,8 @@ export const removeUser = async (id) => {
         console.log(error);
     }
 }
+/*
+export const login = (user) => {
+    return axios.post(`${API_URL}/login`, user);
+}*/
 

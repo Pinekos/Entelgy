@@ -6,9 +6,9 @@ import './styles.css'
 export const Calendario = () => {
   return (
 
-    <body>
+    <div>
         <LoginPage/>
-    </body>
+    </div>
     
   )
 }
